@@ -56,7 +56,7 @@
   on u.id = ur.uid
   inner join t_role r
   on ur.rid = r.id
-</select>
+</select> 
 
   <delete id="deleteRole" parameterType="com.qianfeng.entity.UserRoleKey">
     delete from t_userrole where uid = #{uid}
