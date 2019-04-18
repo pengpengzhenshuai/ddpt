@@ -114,8 +114,61 @@
     where no = #{no}
   </select>
 
+  <resultMap id="userRoleMap" type="com.qianfeng.vo.VUserRoleInfo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="no" jdbcType="VARCHAR" property="no" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="flag" jdbcType="INTEGER" property="flag" />
+
+    <collection property="list"
+                javaType="java.util.ArrayList"
+                ofType="com.qianfeng.entity.Role"
+    >
+      <id column="rid" jdbcType="INTEGER" property="id" />
+      <result column="info" jdbcType="VARCHAR" property="info" />
+    </collection>
+  </resultMap>
+
   <!--查询所有用户角色信息-->
-  <select id="findAllUserRole" resultType="com.qianfeng.vo.VUserRoleInfo">
-    select
+  <select id="findAllUserRole" resultMap="userRoleMap">
+    select u.id, u.no, u.name, u.flag ,r.info, r.id rid from t_user u
+    inner join t_userrole ur
+    on u.id = ur.uid
+    inner join t_role r
+    on ur.rid = r.id
+    <where>
+      <if test="no != null and no != ''">
+        and u.no like concat('%', #{no}, '%')
+      </if>
+      <if test="flag != null and flag != '' ">
+        and u.flag = #{flag}
+      </if>
+        and r.flag = 1
+    </where>
+    limit #{start},#{limit}
+  </select>
+
+  <!--获取用户角色总数-->
+  <select id="findUserRoleCount" resultType="int">
+    select count(1) from t_user u
+    inner join t_userrole ur
+    on u.id = ur.uid
+    inner join t_role r
+    on ur.rid = r.id
+  </select>
+
+  <!--修改用户状态【假删除】-->
+  <update id="UserRoleDelete" parameterType="int">
+    update t_user set flag = 2 where id = #{id}
+  </update>
+
+  <!--查询上级领导-->
+  <select id="findLeaders" parameterType="int" resultType="com.qianfeng.entity.User">
+    select u.name, u.id from t_user u
+      inner join t_userrole ur
+      on u.id = ur.uid
+      inner join t_role r
+      on ur.rid = r.id
+      where r.id = #{id}
   </select>
 </mapper>

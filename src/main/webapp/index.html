@@ -61,7 +61,8 @@
                     <dd><a href="javascript:showTab(1002,'user.html','修改密码');">修改密码</a></dd>
                 </dl>
             </li>
-          <!--  <li class="layui-nav-item"><a href="userloginout.do">注销</a></li>-->
+            <li class="layui-nav-item"><a href="javascript:outLogin()">注销</a></li>
+
 
 
         </ul>
@@ -177,6 +178,23 @@
     });
 </script>
 
+<script type="text/javascript">
+    function outLogin(){
+        $.ajax({
+            type:"get",
+            url:"out.do",
+            dataType:"json",
+            success:function(data){
+                if(data.code==1){
+                    window.parent.location.href="login.html";
+                }
+
+            }
+        })
+    }
+
+
+</script>
 
 </body>
 

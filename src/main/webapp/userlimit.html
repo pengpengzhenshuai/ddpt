@@ -27,6 +27,7 @@
                 <label class="layui-form-label">用户：</label>
                 <div class="layui-input-block">
                     <select class="layui-input" id="fg">
+                        <option value="">--请选择--</option>
                         <option value="1">有效</option>
                         <option value="2">无效</option>
                     </select>
@@ -66,22 +67,22 @@
         //第一个实例
         tableIns = table.render({
             elem: '#tbdata'
-            , url: '/ddpt/userrole/list.do' //数据接口
+            , url: 'findAllUserRole.do' //数据接口
             , page: true //开启分页
             , cols: [[ //表头
-                {field: 'id', title: '序号', sort: true, fixed: 'left'}
+                {type: 'numbers', title: '序号', sort: true, fixed: 'left'}
                 , {field: 'no', title: '工号'}
                 , {field: 'name', title: '姓名', sort: true}
                 , {field: 'rids', title: '职位', templet: function (obj) {
                         var r = "";
-                        var rids = obj.list;
+                        var rids = obj.rids;
                         $(rids).each(function(){
                             r += this.info+ "  ";
                         })
                         return r;
                     }}
-
-                , {field: 'flag', title: '有/无效', templet: function (obj) {
+                , {
+                    field: 'flag', title: '有/无效', templet: function (obj) {
                         var r;
                         switch (obj.flag) {
                             //有效
@@ -98,23 +99,28 @@
                 , {field: 'right', title: '操作', toolbar: "#barop"}
             ]]
         });
+
+
+
+
         //监听工具条
         table.on('tool(tbop)', function (obj) {
             var data = obj.data;
             if (obj.event === 'del') {
                 layer.confirm('是否确认删除用户?', function (index) {
                     $.ajax({
-                        url: "/ddpt/userrole/delete.do",
+                        url: "userRoleDelete.do",
                         type: "POST",
-                        data: "id=" + data.id,
+                        data: {id: data.id, rid:data.rid},
                         success: function (data) {
-                            if (data.code == 1) {
-                                obj.del();//删除表格中的对应行数据
+                            if (data.code == 1000) {
+                               // obj.del();//删除表格中的对应行数据
                                 layer.close(index);
                                 layer.msg("删除成功", {icon: 6});
                             } else {
                                 layer.msg("删除失败", {icon: 5});
                             }
+                            table.reload("tbdata");
                         }
                     });
                 });
@@ -137,10 +143,10 @@
     //修改
     function changeRole() {
         $.ajax({
-            url: "/ddpt/userrole/update.do",
+            url: "userroleedit.do",
             data: $("#fm1").serialize(),
             success: function (obj) {
-                if (obj.code == 1) {
+                if (obj.code == 1000) {
                     layer.msg("编辑权限成功");
                 } else {
                     layer.msg("编辑权限失败");
@@ -151,16 +157,22 @@
     }
 
     function loadRoles(user) {
-        $("#uid").val(user.id);
-        $.get("roleall.do", null, function (arr) {
+        $("#uid").val(user.id)
+        $.get("allRole.do", null, function (arr) {
             $("#dv1").html("");
             for (i = 0; i < arr.length; i++) {
-                if(user.rids.indexOf(arr[i].id)>-1){
-                    $("#dv1").append("<input type=\"checkbox\" name=\"rids\" value='" + arr[i].id + "' title=\"" + arr[i].info + "\" checked>");
-                }else{
-                    $("#dv1").append("<input type=\"checkbox\" name=\"rids\" value='" + arr[i].id + "' title=\"" + arr[i].info + "\">");
+
+                    $("#dv1").append("<input type=\"checkbox\" id=\"checkbox"+arr[i].id+"\" name=\"rids\" value='" + arr[i].id + "' title=\"" + arr[i].info + "\">");
                 }
-            }
+
+            $(user.rids).each(function(){
+                for (i = 0; i < arr.length; i++) {
+                    if(this.id == arr[i].id){
+                        $("#checkbox"+arr[i].id+"").attr('checked', true)
+                    }
+                }
+            })
+
             form1.render();
             layer.open({
                 area: ['500px', '300px'],
@@ -170,7 +182,7 @@
                 btn: ['确认', '取消'],
                 yes: function(index, layero){
                     $.ajax({
-                        url: "/userrole/update.do",
+                        url: "userRoleEdit.do",
                         data: $("#fm1").serialize(),
                         success: function (obj) {
                             if (obj.code == 1000) {

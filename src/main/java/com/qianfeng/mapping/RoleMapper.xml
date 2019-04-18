@@ -5,6 +5,7 @@
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="info" jdbcType="VARCHAR" property="info" />
     <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="flag" jdbcType="VARCHAR" property="flag" />
     <result column="parentId" jdbcType="INTEGER" property="parentid" />
   </resultMap>
   <sql id="Base_Column_List">
@@ -79,4 +80,68 @@
       parentId = #{parentid,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+  <!--额外添加-->
+  <!--获取所有角色信息-->
+  <select id="selectRoleAll" resultType="com.qianfeng.vo.VRolePower">
+    select *
+    from t_role
+    <where>
+      <if test="name != null and name != ''">
+        and name like concat('%', #{name}, '%')
+      </if>
+      <if test="flag != null and flag != ''">
+        and flag = #{flag}
+      </if>
+
+    </where>
+    limit #{start},#{limit}
+  </select>
+
+  <!--获取所有角色总数-->
+  <select id="selectRoleCount" resultType="int">
+    select count(1)
+    from t_role
+  </select>
+
+  <!--获取有效的所有的角色信息-->
+  <select id="selectAll" resultType="com.qianfeng.entity.Role">
+     select *
+      from t_role where flag = 1
+  </select>
+
+  <!--改变角色状态【假删除】-->
+  <update id="roleFalseDelete" parameterType="int">
+    update t_role set flag = 2 where id = #{id}
+  </update>
+
+  <!-- 获得我的角色信息
+    Role findMyRole(int id);-->
+  <select id="findMyRole" parameterType="int" resultType="com.qianfeng.entity.Role">
+    select r.parentId from t_user u
+    inner join t_userrole ur
+    on u.id = ur.uid
+    inner join t_role r
+    on ur.rid = r.id
+    where u.id = #{id}
+  </select>
+
+  <!--添加角色权限-->
+  <insert id="addRoleAuthority" parameterType="map">
+    insert into t_roleauthority (rid,aid) VALUE(#{rid},#{aid}),
+    <foreach collection="array" item="item" separator=",">
+      (#{rid},#{item})
+    </foreach>
+
+  </insert>
+
+  <!--删除角色权限-->
+  <delete id="deleteRoleAuthorityByAid" parameterType="int">
+    DELETE  from t_roleauthority where aid = #{aid}
+  </delete>
+
+  <delete id="deleteRoleAuthorityByRid" parameterType="int">
+    DELETE  from t_roleauthority where rid = #{rid}
+  </delete>
+
 </mapper>

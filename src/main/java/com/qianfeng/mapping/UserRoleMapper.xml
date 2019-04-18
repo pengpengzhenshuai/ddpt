@@ -34,49 +34,26 @@
     </trim>
   </insert>
 
-    <resultMap id="userRoleMap" type="com.qianfeng.vo.VUserRoleInfo">
-        <id column="id" jdbcType="INTEGER" property="id" />
-        <result column="no" jdbcType="VARCHAR" property="no" />
-        <result column="name" jdbcType="VARCHAR" property="name" />
-        <result column="flag" jdbcType="INTEGER" property="flag" />
 
-        <collection property="list"
-                    javaType="java.util.ArrayList"
-                    ofType="com.qianfeng.entity.Role"
-        >
-            <id column="rid" jdbcType="INTEGER" property="id" />
-            <result column="info" jdbcType="VARCHAR" property="info" />
-        </collection>
-    </resultMap>
-
-    <!--查询所有用户角色信息-->
-  <select id="findAllRole" resultMap="userRoleMap">
-  select u.id, u.no, u.name, u.flag ,r.info, r.id rid from t_user u
-  inner join t_userrole ur
-  on u.id = ur.uid
-  inner join t_role r
-  on ur.rid = r.id
-</select> 
-
-  <delete id="deleteRole" parameterType="com.qianfeng.entity.UserRoleKey">
-    delete from t_userrole where uid = #{uid}
+<!--额外添加-->
+  <delete id="deleteUserRole" parameterType="map" >
+    delete from t_userrole
+    <where>
+      <if test="uid != null and uid != ''">
+        and uid = #{uid}
+      </if>
+      <if test="rid != null and rid != ''">
+        and rid = #{rid}
+      </if>
+    </where>
   </delete>
-  <select id="searchByCondition" resultType="com.qianfeng.entity.UserRoleKey">
-    select  u.no, u.flag from t_user u
+
+  <select id="findUserRole" parameterType="int" resultMap="BaseResultMap">
+    select * from t_userrole where uid = #{id}
   </select>
 
-
-  <update id="updateUserRole" parameterType="com.qianfeng.entity.UserRoleKey">
-    update t_depart
-    <set>
-      <if test="name != null">
-        name = #{name},
-      </if>
-      <if test="createtime != null">
-        Createtime = #{createtime},
-      </if>
-    </set>
-    where id = #{id}
-  </update>
-
+  <insert id="addUserRole" parameterType="map">
+    insert into t_userrole (uid, rid)
+    values (#{uid,jdbcType=INTEGER}, #{rid,jdbcType=INTEGER})
+  </insert>
 </mapper>

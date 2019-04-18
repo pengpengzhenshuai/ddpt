@@ -3,7 +3,6 @@ package com.qianfeng.realm;
 
 import com.qianfeng.dao.UserMapper;
 import com.qianfeng.entity.User;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
